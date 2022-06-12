@@ -85,6 +85,8 @@
                     <include>**/*.xml</include>
                     <include>**/*.txt</include>
                     <include>**/*.pem</include>
+                    <include>**/*.png</include>
+                    <include>**/*.jpg</include>
                 </includes>
                 <filtering>false</filtering>
             </resource>

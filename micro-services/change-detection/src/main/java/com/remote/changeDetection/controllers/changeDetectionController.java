@@ -3,18 +3,12 @@ package com.remote.changeDetection.controllers;
 import com.remote.tools.utils.Result;
 import io.swagger.annotations.Api;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,8 +19,9 @@ import java.util.Objects;
 @Api(value="changeDetection",tags = "changeDetection")
 public class changeDetectionController {
 
-    @RequestMapping(value = "/test",method = RequestMethod.GET)
-    public Result<String> test(@RequestParam("string") String a){
+    @RequestMapping(value = "/test",method = RequestMethod.POST)
+    public Result<String> test(@RequestParam("file") MultipartFile[] file){
+        System.out.println(file[0].getOriginalFilename());
         return Result.wrapSuccessfulResult("It's successful!");
     }
 
@@ -39,8 +34,8 @@ public class changeDetectionController {
 
         //保存至本地
         String path="../../../../resources/";
-        File dest1 = new File(new File(path).getAbsolutePath()+ "example/" + "A.png");
-        File dest2 = new File(new File(path).getAbsolutePath()+ "example/" + "B.png");
+        File dest1 = new File(new File(path).getAbsolutePath()+ "/example/" + "A.png");
+        File dest2 = new File(new File(path).getAbsolutePath()+ "/example/" + "B.png");
 
         try {
             pictures.get(0).transferTo(dest1); // 保存文件
