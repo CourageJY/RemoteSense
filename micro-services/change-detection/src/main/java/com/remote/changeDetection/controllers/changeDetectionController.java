@@ -19,7 +19,7 @@ import java.util.Objects;
 @Api(value="changeDetection",tags = "changeDetection")
 public class changeDetectionController {
 
-    @RequestMapping(value = "/test",method = RequestMethod.POST)
+    @RequestMapping(value = "/test",method = RequestMethod.GET)
     public Result<String> test(@RequestParam("file") MultipartFile[] file){
         System.out.println(file[0].getOriginalFilename());
         return Result.wrapSuccessfulResult("It's successful!");
