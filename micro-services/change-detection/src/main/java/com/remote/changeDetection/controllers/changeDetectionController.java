@@ -20,9 +20,27 @@ import java.util.Objects;
 public class changeDetectionController {
 
     @RequestMapping(value = "/test",method = RequestMethod.GET)
-    public Result<String> test(@RequestParam("file") MultipartFile[] file){
-        System.out.println(file[0].getOriginalFilename());
-        return Result.wrapSuccessfulResult("It's successful!");
+    public Result<byte[]> test(){
+        String path="micro-services/change-detection/src/main/resources";
+        String absolute=new File(path).getAbsolutePath();
+
+        //读取python运行文件，并以字符流返还至前端
+        BufferedImage bufferedImage = null;
+        try {
+            bufferedImage = ImageIO.read(new FileInputStream(new File(absolute+"/result/result.jpg")));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Result.wrapErrorResult("读取结果图片失败");
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            assert bufferedImage != null;
+            ImageIO.write(Objects.requireNonNull(bufferedImage), "jpg", out);
+            return Result.wrapSuccessfulResult(out.toByteArray());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Result.wrapErrorResult("失败");
+        }
     }
 
     @RequestMapping(value = "/work",method = RequestMethod.POST)
