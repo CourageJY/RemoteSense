@@ -26,16 +26,17 @@ public class changeDetectionController {
     }
 
     @RequestMapping(value = "/work",method = RequestMethod.POST)
-    public Result<byte[]> pic(@RequestParam(value = "file", required = false) List<MultipartFile> pictures) {
+    public Result<byte[]> pic(@RequestParam(value = "pictures") List<MultipartFile> pictures) {
         //获取
         if(pictures.size()<=1){
             return Result.wrapErrorResult("图片数量必须为2");
         }
 
         //保存至本地
-        String path="../../../../resources/";
-        File dest1 = new File(new File(path).getAbsolutePath()+ "/example/" + "A.png");
-        File dest2 = new File(new File(path).getAbsolutePath()+ "/example/" + "B.png");
+        String path="micro-services/change-detection/src/main/resources";
+        String absolute=new File(path).getAbsolutePath();
+        File dest1 = new File(absolute+ "/example/" + "A.png");
+        File dest2 = new File(absolute+ "/example/" + "B.png");
 
         try {
             pictures.get(0).transferTo(dest1); // 保存文件
@@ -47,26 +48,26 @@ public class changeDetectionController {
 
         //调用并运行python文件
         try {
-            String[] arg = new String[] { "python", path+"ChangeDetector.py"};
+            String[] arg = new String[] { "python", absolute+"/ChangeDetector.py",absolute};
             Process proc = Runtime.getRuntime().exec(arg);
             BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             String line = null;
             while ((line = in.readLine()) != null) {
                 System.out.println(line);
             }
-            in.close();
-            proc.waitFor();
-        } catch (IOException e){
-            e.printStackTrace();
-        } catch (InterruptedException e){
+            in.close();//关闭流
+            int endFlag = proc.waitFor();//判断process对象是否还在执行
+            if (endFlag == 0) {
+                System.out.println("The process is ended normally.");
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
 
         //读取python运行文件，并以字符流返还至前端
         BufferedImage bufferedImage = null;
         try {
-            bufferedImage = ImageIO.read(new FileInputStream(new File(path+"example/"+ "result.png")));
+            bufferedImage = ImageIO.read(new FileInputStream(new File(absolute+"/result/result.jpg")));
         } catch (IOException e) {
             e.printStackTrace();
             return Result.wrapErrorResult("读取结果图片失败");
@@ -74,7 +75,7 @@ public class changeDetectionController {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             assert bufferedImage != null;
-            ImageIO.write(Objects.requireNonNull(bufferedImage), "png", out);
+            ImageIO.write(Objects.requireNonNull(bufferedImage), "jpg", out);
             return Result.wrapSuccessfulResult(out.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();

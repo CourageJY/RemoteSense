@@ -34,3 +34,6 @@ build/
 ### VS Code ###
 .vscode/
 
+static_models/
+!**/src/main/**/static_models/
+

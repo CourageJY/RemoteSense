@@ -76,8 +76,12 @@ if __name__ == "__main__":
     WINDOW_SIZE = 256
     STRIDE = 128
 
-    A_PATH = sys.argv[1]
-    B_PATH = sys.argv[2]
+    absolute=sys.argv[1]
+
+    A_PATH = absolute+'/example/A.png'
+    B_PATH = absolute+'/example/B.png'
+
+    print(A_PATH)
 
     # 读入影像
     im_a = cv2.imread(A_PATH)
@@ -89,18 +93,21 @@ if __name__ == "__main__":
     for rows, cols in WindowGenerator(*ori_size, WINDOW_SIZE, WINDOW_SIZE, STRIDE, STRIDE):
         patch_pairs.append((im_a[rows, cols], im_b[rows, cols]))
 
-    # 导出输入尺寸为滑窗大小的模型，--fixed_input_shape中的batch_size等于len(patch_pairs)
-    run(
-        f"python ./../../../../../PaddleRS/deploy/export/export_model.py \
-            --model_dir=./dynamic_models/best_model \
-            --save_dir=./static_models/{WINDOW_SIZE}x{WINDOW_SIZE} \
-            --fixed_input_shape=[{len(patch_pairs)},3,{WINDOW_SIZE},{WINDOW_SIZE}]",
-        shell=True,
-        check=True
-    )
+
+
+    #导出输入尺寸为滑窗大小的模型，--fixed_input_shape中的batch_size等于len(patch_pairs)
+    # run(
+    #     f"python ./PaddleRS/deploy/export/export_model.py\
+    #         --model_dir=./dynamic_models/best_model \
+    #         --save_dir=./static_models/{WINDOW_SIZE}x{WINDOW_SIZE} \
+    #         --fixed_input_shape=[{len(patch_pairs)},3,{WINDOW_SIZE},{WINDOW_SIZE}]",
+    #     shell=True,
+    #     check=True
+    # )
 
     # 构建预测器并执行推理
-    predictor = Predictor(f"static_models/{WINDOW_SIZE}x{WINDOW_SIZE}", use_gpu=False)
+    modelsPath=absolute+'/static_models'
+    predictor = Predictor(f"{modelsPath}/{WINDOW_SIZE}x{WINDOW_SIZE}", use_gpu=True)
     res = predictor.predict(patch_pairs)
 
     # 取出所有的概率图patch并重建
@@ -112,4 +119,4 @@ if __name__ == "__main__":
 
 
     # 可视化推理结果
-    cv2.imwrite('result.jpg',cm_slide*255)
+    cv2.imwrite(absolute+'/result/result.jpg',cm_slide*255)
