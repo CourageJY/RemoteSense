@@ -79,7 +79,7 @@ public class changeDetectionController {
                 System.out.println("The process is ended normally.");
             }
             else{
-                Result.wrapErrorResult("变化检测脚本执行失败");
+                return Result.wrapErrorResult("变化检测脚本执行失败");
             }
         } catch (Exception e) {
             e.printStackTrace();
