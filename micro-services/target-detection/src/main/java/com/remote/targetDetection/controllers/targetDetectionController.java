@@ -47,7 +47,7 @@ public class targetDetectionController {
         //保存至本地
         String path="micro-services/target-detection/src/main/resources";
         String absolute=new File(path).getAbsolutePath();
-        File dest1 = new File(absolute+ "/test/" + "A.jpg");
+        File dest1 = new File(absolute+ "/example/" + "A.jpg");
 
         try {
             picture.transferTo(dest1); // 保存文件
