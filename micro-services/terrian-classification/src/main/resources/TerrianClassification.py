@@ -18,31 +18,39 @@ def read_rgb(path):
     im = im[..., ::-1]
     return im
 
+def get_lut():
+    lut = np.zeros((256, 3), dtype=np.uint8)
+    lut[0] = [255, 0, 0]
+    lut[1] = [30, 255, 142]
+    lut[2] = [60, 0, 255]
+    lut[3] = [255, 255, 0]
+    lut[4] = [255, 255, 0]
+    return lut
+
+
+def show_image(im, lut=None):
+    if lut is not None:
+        im = lut[im]
+    else:
+        im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+    return im
+
 
 if __name__ == "__main__":
-
     # 输入影像尺寸
     INPUT_SIZE = 256
 
-    #输入影响地址
-    #absolute = sys.argv[1]
-    absolute = "E:/Programs/RemoteSensing/RemoteSensing-backend/micro-services/terrian-classification/src/main/resources"
-    A_PATH = absolute + '/example/A.jpg'
+    # 输入影响地址
+    absolute =sys.argv[1]
+    #A_PATH = sys.argv[1]
+    A_PATH=absolute+"/example/A.jpg"
 
     # 读取输入影像
     im = cv2.imread(A_PATH)
 
-    #定义训练和验证时使用的数据变换（数据增强、预处理等）
-    eval_transforms = T.Compose([
-        T.Resize(target_size=256),
-        # 验证阶段与训练阶段的数据归一化方式必须相同
-        T.Normalize(
-            mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-    ])
-
     # 第一次运行需去掉注释运行，用于生成模型
     # run(
-    #     f"python ./../../../../../../PaddleRS/deploy/export/export_model.py \
+    #     f"python ./../../../../../PaddleRS/deploy/export/export_model.py \
     #         --model_dir=./dynamic_models/best_model \
     #         --save_dir=./static_models/{INPUT_SIZE}x{INPUT_SIZE} \
     #         --fixed_input_shape=[{INPUT_SIZE},{INPUT_SIZE}]",
@@ -50,17 +58,18 @@ if __name__ == "__main__":
     #     check=True
     # )
 
-    modelsPath = absolute + '/static_models'
+    modelsPath = absolute+'./static_models'
     predictor = Predictor(f"{modelsPath}/{INPUT_SIZE}x{INPUT_SIZE}", use_gpu=True)
 
     # 绘制目标框
     with paddle.no_grad():
-        im = cv2.resize(im[..., ::-1], (INPUT_SIZE, INPUT_SIZE), interpolation=cv2.INTER_CUBIC)
-        pred = predictor.predict(im)
+        # input = predictor.predict(im)['score_map']
+        # input = paddle.to_tensor(input)
+        # output = paddle.argmax(input,2)
+        # res =output.numpy().astype(np.uint8)
 
-        vis = pred['label_map']
-        vis=vis.astype(np.uint8)
-
+        label = predictor.predict(im)['label_map']
+        label = show_image(label, lut=get_lut())
 
     # 存储推理结果
-    cv2.imwrite(absolute + './result/result.jpg', vis)
+    cv2.imwrite(absolute+'./result/result.jpg', label)

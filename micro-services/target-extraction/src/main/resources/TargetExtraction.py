@@ -24,8 +24,8 @@ if __name__ == "__main__":
     INPUT_SIZE = 1488
 
     #输入影响地址
-    #absolute = sys.argv[1]
-    absolute = "E:/Programs/RemoteSensing/RemoteSensing-backend/micro-services/target-extraction/src/main/resources"
+    absolute = sys.argv[1]
+    #absolute = "E:/Programs/RemoteSensing/RemoteSensing-backend/micro-services/target-extraction/src/main/resources"
     A_PATH = absolute + '/example/A.tiff'
 
     # 读取输入影像
@@ -60,5 +60,5 @@ if __name__ == "__main__":
         res = output.numpy().astype(np.uint8)
 
     # 存储推理结果
-    cv2.imwrite('./result/result.jpg', res * 255)
+    cv2.imwrite(absolute+'./result/result.jpg', res * 255)
 
