@@ -73,10 +73,12 @@ if __name__ == "__main__":
 
 
     # 设置滑窗大小与滑动步长
+    #WINDOW_SIZE = 256
     WINDOW_SIZE = 256
     STRIDE = 128
 
-    absolute=sys.argv[1]
+    #absolute=sys.argv[1]
+    absolute="E:/Programs/RemoteSensing/RemoteSensing-backend/micro-services/change-detection/src/main/resources"
 
     A_PATH = absolute+'/example/A.png'
     B_PATH = absolute+'/example/B.png'

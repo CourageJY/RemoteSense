@@ -27,7 +27,8 @@ if __name__ == "__main__":
     INPUT_SIZE = 608
 
     # 输入影响地址
-    absolute = sys.argv[1]
+    #absolute = sys.argv[1]
+    absolute="E:/Programs/RemoteSensing/RemoteSensing-backend/micro-services/target-detection/src/main/resources"
     A_PATH = absolute+'/example/A.jpg'
 
 
@@ -48,7 +49,7 @@ if __name__ == "__main__":
 
     # 第一次运行需去掉注释运行，用于生成模型
     # run(
-    #     f"python ./../../../../../PaddleRS/deploy/export/export_model.py \
+    #     f"python ./../../../../../../PaddleRS/deploy/export/export_model.py \
     #         --model_dir=./dynamic_models/best_model \
     #         --save_dir=./static_models/{INPUT_SIZE}x{INPUT_SIZE} \
     #         --fixed_input_shape=[{INPUT_SIZE},{INPUT_SIZE}]",
@@ -72,11 +73,11 @@ if __name__ == "__main__":
         # 用绿色画出预测目标框
         if len(pred) > 0:
             vis = visualize_detection(
-                np.array(vis), pred, 
-                color=np.asarray([[0,255,0]], dtype=np.uint8), 
+                np.array(vis), pred,
+                color=np.asarray([[0,255,0]], dtype=np.uint8),
                 threshold=0.2, save_dir=None
             )
-        
+
 
     # 存储推理结果
     cv2.imwrite(absolute+'./result/result.jpg', vis)

@@ -1,5 +1,6 @@
 package com.remote.changeDetection.controllers;
 
+import com.remote.tools.utils.ExeCute;
 import com.remote.tools.utils.Result;
 import io.swagger.annotations.Api;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -65,24 +66,9 @@ public class changeDetectionController {
         }
 
         //调用并运行python文件
-        try {
-            String[] arg = new String[] { "python", absolute+"/ChangeDetector.py",absolute};
-            Process proc = Runtime.getRuntime().exec(arg);
-            BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-            String line = null;
-            while ((line = in.readLine()) != null) {
-                System.out.println(line);
-            }
-            in.close();//关闭流
-            int endFlag = proc.waitFor();//判断process对象是否还在执行
-            if (endFlag == 0) {
-                System.out.println("The process is ended normally.");
-            }
-            else{
-                return Result.wrapErrorResult("变化检测脚本执行失败");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        String[] arg = new String[] { "python", absolute+"/ChangeDetector.py",absolute};
+        if(ExeCute.execCmd(arg)==null){
+            return Result.wrapErrorResult("python 脚本执行失败");
         }
 
         //读取python运行文件，并以字符流返还至前端
