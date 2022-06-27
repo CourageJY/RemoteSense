@@ -29,7 +29,7 @@ public class terrianClassficationController {
         //保存至本地
         String path="micro-services/terrian-classification/src/main/resources";
         String absolute=new File(path).getAbsolutePath();
-        File dest1 = new File(absolute+ "/example/" + "A.tiff");
+        File dest1 = new File(absolute+ "/example/" + "A.jpg");
 
         try {
             picture.transferTo(dest1); // 保存文件
