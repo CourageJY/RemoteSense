@@ -27,8 +27,8 @@ if __name__ == "__main__":
     INPUT_SIZE = 608
 
     # 输入影响地址
-    #absolute = sys.argv[1]
-    absolute="E:/Programs/RemoteSensing/RemoteSensing-backend/micro-services/target-detection/src/main/resources"
+    absolute = sys.argv[1]
+    #absolute="E:/Programs/RemoteSensing/RemoteSensing-backend/micro-services/target-detection/src/main/resources"
     A_PATH = absolute+'/example/A.jpg'
 
 

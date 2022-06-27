@@ -23,8 +23,8 @@ def get_lut():
     lut[0] = [255, 0, 0]
     lut[1] = [30, 255, 142]
     lut[2] = [60, 0, 255]
-    lut[3] = [255, 255, 0]
-    lut[4] = [255, 255, 0]
+    lut[3] = [255, 222, 0]
+    lut[4] = [0, 255, 255]
     return lut
 
 
@@ -35,6 +35,15 @@ def show_image(im, lut=None):
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
     return im
 
+def get_rate(image,n):
+    w,h = image.shape
+    size = w*h
+    count = 0
+    for row in image:
+        for p in row:
+            if p == n:
+                count+=1
+    return count/size
 
 if __name__ == "__main__":
     # 输入影像尺寸
@@ -42,7 +51,7 @@ if __name__ == "__main__":
 
     # 输入影响地址
     absolute =sys.argv[1]
-    #A_PATH = sys.argv[1]
+    #absolute="E:/Programs/RemoteSensing/RemoteSensing-backend/micro-services/terrian-classification/src/main/resources"
     A_PATH=absolute+"/example/A.jpg"
 
     # 读取输入影像
@@ -69,6 +78,7 @@ if __name__ == "__main__":
         # res =output.numpy().astype(np.uint8)
 
         label = predictor.predict(im)['label_map']
+        print(get_rate(label,4))
         label = show_image(label, lut=get_lut())
 
     # 存储推理结果

@@ -64,8 +64,15 @@ def recons_prob_map(patches, ori_size, window_size, stride):
     prob_map /= cnt
     return prob_map
 
-
-
+def get_rate(image,n):
+    w,h = image.shape
+    size = w*h
+    count = 0
+    for row in image:
+        for p in row:
+            if p == n:
+                count+=1
+    return count/size
 
 if __name__ == "__main__":
 
@@ -77,8 +84,8 @@ if __name__ == "__main__":
     WINDOW_SIZE = 256
     STRIDE = 128
 
-    #absolute=sys.argv[1]
-    absolute="E:/Programs/RemoteSensing/RemoteSensing-backend/micro-services/change-detection/src/main/resources"
+    absolute=sys.argv[1]
+    #absolute="E:/Programs/RemoteSensing/RemoteSensing-backend/micro-services/change-detection/src/main/resources"
 
     A_PATH = absolute+'/example/A.png'
     B_PATH = absolute+'/example/B.png'
@@ -118,6 +125,7 @@ if __name__ == "__main__":
 
     # 对概率图进行阈值分割，得到二值变化图
     cm_slide = (prob_map>0.5).astype('int32')
+    print(get_rate(cm_slide,1))
 
 
     # 可视化推理结果

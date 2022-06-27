@@ -1,6 +1,7 @@
 package com.remote.changeDetection.controllers;
 
 import com.remote.tools.utils.ExeCute;
+import com.remote.tools.utils.ExtractAns;
 import com.remote.tools.utils.Result;
 import io.swagger.annotations.Api;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -45,7 +46,7 @@ public class changeDetectionController {
     }
 
     @RequestMapping(value = "/work",method = RequestMethod.POST)
-    public Result<byte[]> pic(@RequestParam(value = "pictures") List<MultipartFile> pictures) {
+    public Result<ExtractAns> pic(@RequestParam(value = "pictures") List<MultipartFile> pictures) {
         //获取
         if(pictures.size()<=1){
             return Result.wrapErrorResult("图片数量必须为2");
@@ -67,8 +68,15 @@ public class changeDetectionController {
 
         //调用并运行python文件
         String[] arg = new String[] { "python", absolute+"/ChangeDetector.py",absolute};
-        if(ExeCute.execCmd(arg)==null){
+        String res=ExeCute.execCmd(arg);
+        float rate=0;
+        if(res==null){
             return Result.wrapErrorResult("python 脚本执行失败");
+        }
+        else {
+            if(!res.equals("success")){
+                rate= ExtractAns.GetRate(res);
+            }
         }
 
         //读取python运行文件，并以字符流返还至前端
@@ -83,7 +91,7 @@ public class changeDetectionController {
         try {
             assert bufferedImage != null;
             ImageIO.write(Objects.requireNonNull(bufferedImage), "jpg", out);
-            return Result.wrapSuccessfulResult(out.toByteArray());
+            return Result.wrapSuccessfulResult(ExtractAns.GetAns(out.toByteArray(),rate));
         } catch (IOException e) {
             e.printStackTrace();
             return Result.wrapErrorResult("失败");

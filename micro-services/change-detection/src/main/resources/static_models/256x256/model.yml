@@ -57,5 +57,34 @@ _init_params:
   num_classes: 2
   use_mixed_loss: false
 completed_epochs: 0
+raw_params: !!python/object/apply:collections.OrderedDict
+- - - num_classes
+    - 2
+  - - use_mixed_loss
+    - false
+  - - in_channels
+    - 3
+  - - backbone
+    - resnet18
+  - - n_stages
+    - 4
+  - - use_tokenizer
+    - true
+  - - token_len
+    - 4
+  - - pool_mode
+    - max
+  - - pool_size
+    - 2
+  - - enc_with_pos
+    - true
+  - - enc_depth
+    - 1
+  - - enc_head_dim
+    - 64
+  - - dec_depth
+    - 8
+  - - dec_head_dim
+    - 8
 status: Infer
 version: develop
