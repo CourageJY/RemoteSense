@@ -57,5 +57,8 @@ _init_params:
   use_matrix_nms: true
   use_spp: true
 completed_epochs: 0
+raw_params: !!python/object/apply:collections.OrderedDict
+  - - - num_classes
+      - 1
 status: Infer
 version: develop
