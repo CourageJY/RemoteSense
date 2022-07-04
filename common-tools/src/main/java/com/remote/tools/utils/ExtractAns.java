@@ -22,4 +22,11 @@ public class ExtractAns {
         DecimalFormat df = new DecimalFormat("#.0000");
         return Float.parseFloat(df.format(res));
     }
+
+    public static float GetRate(float f) {
+        //保留四位小数
+        DecimalFormat df = new DecimalFormat("#.0000");
+        return Float.parseFloat(df.format(f));
+    }
+
 }

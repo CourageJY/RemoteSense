@@ -56,4 +56,18 @@ public class Radom {
         System.out.print("\n");
         return r;
     }
+
+    public static String getRandomNumber(int n,List<String> ls){
+        String result="";
+        do{
+            Random random = new Random();
+            for (int i=0;i<n;i++)
+            {
+                result+=random.nextInt(10);
+            }
+            System.out.println(result);
+        }while(ls.contains(result));//如果重复则再次遍历
+        ls.add(result);//加入至列表中
+        return result;
+    }
 }

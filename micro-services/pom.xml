@@ -12,10 +12,10 @@
     <artifactId>micro-services</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>change-detection</module>
-        <module>target-extraction</module>
-        <module>target-detection</module>
-        <module>terrian-classification</module>
+        <module>change_detection</module>
+        <module>target_extraction</module>
+        <module>target_detection</module>
+        <module>terrian_classification</module>
     </modules>
 
     <properties>
