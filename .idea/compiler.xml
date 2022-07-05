@@ -6,10 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="change_detection" />
         <module name="target_detection" />
-        <module name="terrian_classification" />
+        <module name="user_service" />
         <module name="service-gateway" />
+        <module name="change_detection" />
+        <module name="terrian_classification" />
         <module name="common-tools" />
         <module name="target_extraction" />
       </profile>
@@ -26,6 +27,7 @@
       <module name="target_detection" options="-parameters" />
       <module name="target_extraction" options="-parameters" />
       <module name="terrian_classification" options="-parameters" />
+      <module name="user_service" options="-parameters" />
     </option>
   </component>
 </project>

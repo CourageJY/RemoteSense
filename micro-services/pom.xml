@@ -16,6 +16,7 @@
         <module>target_extraction</module>
         <module>target_detection</module>
         <module>terrian_classification</module>
+        <module>user_service</module>
     </modules>
 
     <properties>
