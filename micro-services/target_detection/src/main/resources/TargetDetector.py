@@ -67,8 +67,8 @@ def TargetDetector(a,r):
         if len(pred) > 0:
             vis = visualize_detection(
                 np.array(vis), pred,
-                color=np.asarray([[0, 255, 0]], dtype=np.uint8),
-                threshold=0.2, save_dir=None
+                color=np.asarray([[0, 255, 0],[255,0,0],[0,0,255],[125,125,125]], dtype=np.uint8),
+                threshold=0.3, save_dir=None
             )
 
     # 存储推理结果

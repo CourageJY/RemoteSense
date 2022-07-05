@@ -14,6 +14,9 @@
         <module name="target_extraction" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="RemoteSensing-backend" target="11" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
