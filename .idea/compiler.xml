@@ -7,12 +7,16 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="target_detection" />
+        <module name="terrian-classification" />
         <module name="user_service" />
         <module name="service-gateway" />
+        <module name="target-detection" />
         <module name="change_detection" />
         <module name="terrian_classification" />
         <module name="common-tools" />
         <module name="target_extraction" />
+        <module name="target-extraction" />
+        <module name="change-detection" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -21,11 +25,15 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="change-detection" options="-parameters" />
       <module name="change_detection" options="-parameters" />
       <module name="common-tools" options="-parameters" />
       <module name="service-gateway" options="-parameters" />
+      <module name="target-detection" options="-parameters" />
+      <module name="target-extraction" options="-parameters" />
       <module name="target_detection" options="-parameters" />
       <module name="target_extraction" options="-parameters" />
+      <module name="terrian-classification" options="-parameters" />
       <module name="terrian_classification" options="-parameters" />
       <module name="user_service" options="-parameters" />
     </option>
