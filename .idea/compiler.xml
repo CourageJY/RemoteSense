@@ -10,6 +10,7 @@
         <module name="terrian-classification" />
         <module name="user_service" />
         <module name="service-gateway" />
+        <module name="models-related" />
         <module name="target-detection" />
         <module name="change_detection" />
         <module name="terrian_classification" />
@@ -28,6 +29,7 @@
       <module name="change-detection" options="-parameters" />
       <module name="change_detection" options="-parameters" />
       <module name="common-tools" options="-parameters" />
+      <module name="models-related" options="-parameters" />
       <module name="service-gateway" options="-parameters" />
       <module name="target-detection" options="-parameters" />
       <module name="target-extraction" options="-parameters" />
