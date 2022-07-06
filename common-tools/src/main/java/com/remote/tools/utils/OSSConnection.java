@@ -25,7 +25,7 @@ public class OSSConnection {
         String bucketName = "remote-s";
 
         //要保存的文件路径
-        String frontName = "../../../../../../../../micro-services/";
+        String frontName = "../micro-services/";
 
         String backName = "/src/main/resources/inputData.zip";
 
@@ -102,7 +102,8 @@ public class OSSConnection {
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
 
         try {
-            pathName="E:\\Programs\\RemoteSensing\\RemoteSensing-backend\\input.zip";
+            //pathName="E:\\Programs\\RemoteSensing\\RemoteSensing-backend\\input.zip";
+            //pathName="./input.zip";
 
             // 请求10个任务并发下载。
             DownloadFileRequest downloadFileRequest = new DownloadFileRequest(bucketName, objectName);

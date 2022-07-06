@@ -14,7 +14,7 @@ public class OSSConnectionTest {
     @Test
     public void downLoadMatipartTest() {
         OSSConnection ossConnection=new OSSConnection();
-        ossConnection.downLoadMatipart("change-detection","test/1");
+        ossConnection.downLoadMatipart("change-detection","test/2.zip");
     }
 
     @Test
