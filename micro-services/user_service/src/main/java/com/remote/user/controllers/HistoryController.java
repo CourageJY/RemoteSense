@@ -2,6 +2,7 @@ package com.remote.user.controllers;
 
 import com.remote.models.History;
 import com.remote.models.User;
+import com.remote.tools.utils.OSSConnection;
 import com.remote.user.services.HistoryService;
 import com.remote.user.services.UserService;
 import com.remote.tools.enums.HistoryStatus;
@@ -97,10 +98,16 @@ public class HistoryController {
         if(his==null){
             return Result.wrapErrorResult("该历史记录id不存在");
         }
-        //todo
-        /*
-        *从oss中移除对象
-         */
+
+        //从oss中移除对象
+        OSSConnection ossConnection=new OSSConnection();
+        ossConnection.removeFile(his.getOriginName1());
+        if(his.getOriginName2()!=null){
+            ossConnection.removeFile(his.getOriginName2());
+        }
+        if(his.getResultName()!=null){
+            ossConnection.removeFile(his.getResultName());
+        }
 
         //在mysql中使用标记删除
         his.setIsRemove(true);
