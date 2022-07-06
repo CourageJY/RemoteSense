@@ -9,6 +9,7 @@
         <module name="target_detection" />
         <module name="user_service" />
         <module name="service-gateway" />
+        <module name="models-related" />
         <module name="change_detection" />
         <module name="terrian_classification" />
         <module name="common-tools" />
@@ -23,6 +24,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="change_detection" options="-parameters" />
       <module name="common-tools" options="-parameters" />
+      <module name="models-related" options="-parameters" />
       <module name="service-gateway" options="-parameters" />
       <module name="target_detection" options="-parameters" />
       <module name="target_extraction" options="-parameters" />
