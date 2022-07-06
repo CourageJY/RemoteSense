@@ -1,6 +1,5 @@
 import sys
-#sys.path.append("./../../../../../PaddleRS")
-
+# sys.path.append("C:/Users/王棋田/Desktop/软件杯/RS-Program/PaddleRS")
 import paddlers
 from paddlers.deploy import Predictor
 from paddlers import transforms as T
@@ -18,7 +17,7 @@ def read_rgb(path):
     im = im[...,::-1]
     return im
 
-def TargetDetector(a,r):
+def TargetDetector(a,r,dir):
     # 输入影像尺寸
     INPUT_SIZE = 608
 
@@ -72,4 +71,4 @@ def TargetDetector(a,r):
             )
 
     # 存储推理结果
-    cv2.imwrite(absolute + './result/'+r+'.jpg', vis)
+    cv2.imwrite(dir+r+'.jpg', vis)

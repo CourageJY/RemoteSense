@@ -5,6 +5,7 @@ import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.*;
+import org.springframework.scheduling.annotation.Async;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -79,6 +80,7 @@ public class OSSConnection {
     }
 
     //分片下载
+    @Async
     public void downLoadMatipart(String fileType,String fileName){
         // 不包含Bucket名称在内的Object完整路径
         String objectName = fileName;

@@ -26,7 +26,8 @@ def target_detector():
     args = request.args  # 获取get参数
     a = args.get("a")
     r = args.get("r")
-    TargetDetector(a,r)
+    dir = args.get("dir")
+    TargetDetector(a,r,dir)
     res={"res":"success"}
     return jsonify(res)
 

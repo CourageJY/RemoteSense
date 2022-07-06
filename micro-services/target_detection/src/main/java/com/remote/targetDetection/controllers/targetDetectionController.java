@@ -1,16 +1,22 @@
 package com.remote.targetDetection.controllers;
 
+import com.remote.models.History;
+import com.remote.targetDetection.services.HistoryService;
+import com.remote.targetDetection.services.UserService;
 import com.remote.tools.utils.*;
 import io.swagger.annotations.Api;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.zip.ZipFile;
 
 @CrossOrigin("*")
 @RestController
@@ -20,6 +26,14 @@ import java.util.*;
 public class targetDetectionController {
     //文件名列表
     public List<String>ls=new ArrayList<>();
+
+
+    @Autowired
+    HistoryService historyService;
+
+    @Autowired
+    UserService userService;
+
 
     @RequestMapping(value = "/test",method = RequestMethod.GET)
     public Result<byte[]> test(){
@@ -109,9 +123,85 @@ public class targetDetectionController {
             return Result.wrapErrorResult("失败");
         }
     }
-}
 
-//        String[] arg = new String[] { "python", absolute+"/TargetDetector.py",absolute};
-//        if(ExeCute.execCmd(arg)==null) {
-//            return Result.wrapErrorResult("目标检测脚本执行失败");
-//        }
+    @RequestMapping(value = "/batch_work",method = RequestMethod.POST)
+    public Result batchWork(String fileName, String userId, String title) throws FileNotFoundException {
+        History history = new History();
+        history.setId(historyService.generateID());
+        history.setCreateTime(Instant.now());
+        history.setOriginName1(fileName);
+        history.setOriginName2("");
+        history.setTitle(title);
+        history.setResultName("");
+        history.setSize("");
+        history.setIsRemove(false);
+        history.setStatus("created");
+        history.setUser(userService.getById(userId));
+        history.setType("target-detection");
+        historyService.createOrUpdate(history);
+
+
+        Thread thread = new Thread(()->{
+            history.setStatus("running");
+            historyService.createOrUpdate(history);
+            String path="micro-services/target_detection/src/main/resources";
+            String absolute=new File(path).getAbsolutePath();
+            OSSConnection oss = new OSSConnection();
+            oss.downLoadMatipart("target-detection", fileName);
+
+            ZipUtil zipUtil = new ZipUtil();
+            File file = new File(absolute+"/inputData.zip");
+            zipUtil.unPackZip(file,absolute+"/input/");
+            File inputFolder = new File(absolute + "/input/");
+            File[] images = inputFolder.listFiles();
+            String resultFolderDir = Radom.getRandomNumber(6,ls);
+            File resultFolder = new File(absolute+ resultFolderDir);
+            resultFolder.mkdir();
+            for(File image:images){
+                String url="http://127.0.0.1:8300/TargetDetector";
+                Http http=new Http();
+                try {
+                    //传入文件名的参数
+                    Map<String, Object> map=new HashMap<>();
+                    map.put("a",image.getName());
+                    map.put("r",image.getName());
+                    map.put("dir",absolute+resultFolderDir);
+                    //执行请求
+                    String res=http.doGet(url,map);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    MyFile.DeleteFolder(absolute+ "/input/");
+                    MyFile.DeleteFolder(absolute+ "/result/");
+                    File temp = new File(absolute+ "/input/");
+                    temp.mkdir();
+                    temp = new File(absolute+ "/result/");
+                    temp.mkdir();
+                    //修改状态
+                    history.setStatus("fault");
+                    historyService.createOrUpdate(history);
+                }
+            }
+            FileOutputStream fos= null;
+            try {
+                fos = new FileOutputStream(new File(absolute+"/result.zip"));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            zipUtil.toZip(absolute+ resultFolderDir,fos,true);
+            oss.uplopadMatipart(fileName+"_result",absolute+"/result.zip");
+            history.setStatus("success");
+            history.setResultName(fileName+"_result");
+            historyService.createOrUpdate(history);
+
+            MyFile.DeleteFolder(absolute+ "/input/");
+            MyFile.DeleteFolder(absolute+ "/inputData.zip");
+            File temp = new File(absolute+ "/input/");
+            temp.mkdir();
+            MyFile.DeleteFolder(absolute+ "/result/");
+            MyFile.DeleteFolder(absolute+ "/result.zip");
+        });
+
+        thread.start();
+        return Result.wrapSuccessfulResult("已开始运算，在历史记录中查看运算状态，下载运算结果。");
+    }
+}
