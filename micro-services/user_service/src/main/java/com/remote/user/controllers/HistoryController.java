@@ -65,7 +65,7 @@ public class HistoryController {
         return Result.wrapSuccessfulResult(ls);
     }
 
-    @ApiOperation(value = "上传（创建）单条历史记录")
+    @ApiOperation(value = "上传（创建）单条历史记录，返回his_id")
     @RequestMapping(value = "/create",method = RequestMethod.POST)
     public Result<String> create(@RequestBody HisInfo hisInfo){
         User u=userService.getById(hisInfo.userId);
@@ -88,7 +88,7 @@ public class HistoryController {
 
         historyService.createOrUpdate(his);
 
-        return Result.wrapSuccessfulResult("创建成功");
+        return Result.wrapSuccessfulResult(his.getId());
     }
 
     @ApiOperation(value = "移除单条历史记录")

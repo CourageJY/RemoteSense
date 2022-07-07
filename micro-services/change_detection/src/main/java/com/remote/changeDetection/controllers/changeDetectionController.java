@@ -143,11 +143,10 @@ public class changeDetectionController {
     }
 
 
-    @RequestMapping(value = "/batch_work",method = RequestMethod.POST)
+    @RequestMapping(value = "/batch_work",method = RequestMethod.GET)
     public Result<String> batchWork(@RequestParam(value = "his_id")String hisId) throws FileNotFoundException {
         //获取目标记录
         History history = historyService.getById(hisId);
-        historyService.createOrUpdate(history);
         String fileName1=history.getOriginName1();
         String fileName2=history.getOriginName2();
 
