@@ -25,7 +25,7 @@ def read_rgb(path):
     im = im[..., ::-1]
     return im
 
-def TargetExtraction(a,r):
+def TargetExtraction(a,r,dir):
     # 输入影像尺寸
     INPUT_SIZE = 1488
 
@@ -33,7 +33,7 @@ def TargetExtraction(a,r):
     current_path = os.path.abspath(__file__)
     # 获取当前文件的父目录
     absolute = os.path.abspath(os.path.dirname(current_path) + os.path.sep + ".")
-    A_PATH = absolute + '/input/'+a+'.tiff'
+    A_PATH = absolute + '/input/'+a
 
     # 读取输入影像
     im = imread(A_PATH)
@@ -67,4 +67,4 @@ def TargetExtraction(a,r):
         res = output.numpy().astype(np.uint8)
 
     # 存储推理结果
-    imwrite(absolute + './result/'+r+'.jpg', res * 255)
+    imwrite(dir + '/'+r, res * 255)

@@ -78,7 +78,7 @@ def get_rate(image,n):
                 count+=1
     return count/size
 
-def ChangeDetector(a,b,r):
+def ChangeDetector(a,b,r,dir):
     # 设置滑窗大小与滑动步长
     #WINDOW_SIZE = 256
     WINDOW_SIZE = 256
@@ -89,8 +89,8 @@ def ChangeDetector(a,b,r):
     # 获取当前文件的父目录
     absolute = os.path.abspath(os.path.dirname(current_path) + os.path.sep + ".")
 
-    A_PATH = absolute+'/input/'+a+'.png'
-    B_PATH = absolute+'/input/'+b+'.png'
+    A_PATH = absolute+'/input/'+a
+    B_PATH = absolute+'/input/'+b
 
     print(A_PATH)
 
@@ -130,6 +130,6 @@ def ChangeDetector(a,b,r):
 
 
     # 可视化推理结果
-    cv2.imwrite(absolute+'/result/'+r+'.jpg',cm_slide*255)
+    cv2.imwrite(dir+'/'+r,cm_slide*255)
 
     return res

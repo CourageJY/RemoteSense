@@ -10,7 +10,6 @@ import org.springframework.context.annotation.ComponentScan;
 @EntityScan("com.remote.models")
 @EnableDiscoveryClient
 @SpringBootApplication
-
 public class targetDetection {
     public static void main(String[] args)
     {

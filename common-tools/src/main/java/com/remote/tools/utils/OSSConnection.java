@@ -34,7 +34,7 @@ public class OSSConnection {
      *  下载Object到本地文件，并保存到指定的本地路径中。如果指定的本地文件存在会覆盖，不存在则新建。
      *  如果未指定本地路径，则下载后的文件默认保存到程序所属项目对应本地路径中。
      */
-    public void downloadFile(String fileType,String fileName) {
+    public boolean downloadFile(String fileType,String fileName) {
         // 不包含Bucket名称在内的Object完整路径
         String objectName = fileName;
         String pathName = "";
@@ -57,9 +57,8 @@ public class OSSConnection {
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
 
         try {
-
-
             ossClient.getObject(new GetObjectRequest(bucketName, objectName), new File(pathName));
+            return true;
         } catch (OSSException oe) {
             System.out.println("Caught an OSSException, which means your request made it to OSS, "
                     + "but was rejected with an error response for some reason.");
@@ -67,11 +66,13 @@ public class OSSConnection {
             System.out.println("Error Code:" + oe.getErrorCode());
             System.out.println("Request ID:" + oe.getRequestId());
             System.out.println("Host ID:" + oe.getHostId());
+            return false;
         } catch (ClientException ce) {
             System.out.println("Caught an ClientException, which means the client encountered "
                     + "a serious internal problem while trying to communicate with OSS, "
                     + "such as not being able to access the network.");
             System.out.println("Error Message:" + ce.getMessage());
+            return false;
         } finally {
             if (ossClient != null) {
                 ossClient.shutdown();
@@ -81,32 +82,35 @@ public class OSSConnection {
 
     //分片下载
     @Async
-    public void downLoadMatipart(String fileType,String fileName){
-        String path="micro-services/target_detection/src/main/resources";
-        String absolute=new File(path).getAbsolutePath();
+    public boolean downLoadMatipart(String fileType,String fileName){
         // 不包含Bucket名称在内的Object完整路径
         String objectName = fileName;
-        String pathName = "";
+        String type="";
+        String pathName="";
         switch (fileType){
             case "change-detection":
-                pathName = frontName + "change_detection" + backName;
+                type="change_detection";
                 break;
             case "target-detection":
-                pathName = frontName + "target_detection" + backName;
+                type="target_detection";
                 break;
             case "target-extraction":
-                pathName = frontName + "target_extraction" + backName;
+                type="target_extraction";
                 break;
             case "terrian-classification":
-                pathName = frontName + "terrian_classification" + backName;
+                type="terrian_classification";
                 break;
             default:
                 break;
         }
+
+        String path="micro-services/"+type+"/src/main/resources";
+        String absolute=new File(path).getAbsolutePath();
+
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
 
         try {
-            pathName=absolute+"/inputData.zip";
+            pathName=absolute+"/input/"+fileName;
             //pathName="./input.zip";
 
             // 请求10个任务并发下载。
@@ -130,6 +134,8 @@ public class OSSConnection {
             System.out.println(objectMetadata.getETag());
             System.out.println(objectMetadata.getLastModified());
             System.out.println(objectMetadata.getUserMetadata().get("meta"));
+
+            return true;
         } catch (OSSException oe) {
             System.out.println("Caught an OSSException, which means your request made it to OSS, "
                     + "but was rejected with an error response for some reason.");
@@ -137,11 +143,15 @@ public class OSSConnection {
             System.out.println("Error Code:" + oe.getErrorCode());
             System.out.println("Request ID:" + oe.getRequestId());
             System.out.println("Host ID:" + oe.getHostId());
+
+            return false;
         } catch (Throwable ce) {
             System.out.println("Caught an ClientException, which means the client encountered "
                     + "a serious internal problem while trying to communicate with OSS, "
                     + "such as not being able to access the network.");
             System.out.println("Error Message:" + ce.getMessage());
+
+            return false;
         } finally {
             if (ossClient != null) {
                 ossClient.shutdown();
@@ -150,7 +160,7 @@ public class OSSConnection {
     }
 
     //分片上传
-    public void uplopadMatipart(String objectName,String filePath){
+    public boolean uplopadMatipart(String objectName,String filePath){
 
         // 创建OSSClient实例。
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
@@ -247,6 +257,8 @@ public class OSSConnection {
             // 完成分片上传。
             CompleteMultipartUploadResult completeMultipartUploadResult = ossClient.completeMultipartUpload(completeMultipartUploadRequest);
             System.out.println(completeMultipartUploadResult.getETag());
+
+            return true;
         } catch (OSSException oe) {
             System.out.println("Caught an OSSException, which means your request made it to OSS, "
                     + "but was rejected with an error response for some reason.");
@@ -254,11 +266,15 @@ public class OSSConnection {
             System.out.println("Error Code:" + oe.getErrorCode());
             System.out.println("Request ID:" + oe.getRequestId());
             System.out.println("Host ID:" + oe.getHostId());
+
+            return false;
         } catch (ClientException ce) {
             System.out.println("Caught an ClientException, which means the client encountered "
                     + "a serious internal problem while trying to communicate with OSS, "
                     + "such as not being able to access the network.");
             System.out.println("Error Message:" + ce.getMessage());
+
+            return false;
         } finally {
             if (ossClient != null) {
                 ossClient.shutdown();
@@ -266,13 +282,15 @@ public class OSSConnection {
         }
     }
 
-    public void removeFile(String objectName){
+    public boolean removeFile(String objectName){
         // 创建OSSClient实例。
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
 
         try {
             // 删除文件或目录。如果要删除目录，目录必须为空。
             ossClient.deleteObject(bucketName, objectName);
+
+            return true;
         } catch (OSSException oe) {
             System.out.println("Caught an OSSException, which means your request made it to OSS, "
                     + "but was rejected with an error response for some reason.");
@@ -280,11 +298,15 @@ public class OSSConnection {
             System.out.println("Error Code:" + oe.getErrorCode());
             System.out.println("Request ID:" + oe.getRequestId());
             System.out.println("Host ID:" + oe.getHostId());
+
+            return false;
         } catch (ClientException ce) {
             System.out.println("Caught an ClientException, which means the client encountered "
                     + "a serious internal problem while trying to communicate with OSS, "
                     + "such as not being able to access the network.");
             System.out.println("Error Message:" + ce.getMessage());
+
+            return false;
         } finally {
             if (ossClient != null) {
                 ossClient.shutdown();

@@ -53,7 +53,7 @@ def TargetDetector(a,r,dir):
     # )
 
     modelsPath = absolute + '\static_models'
-    predictor = Predictor(f"{modelsPath}\{INPUT_SIZE}x{INPUT_SIZE}", use_gpu=False)
+    predictor = Predictor(f"{modelsPath}/{INPUT_SIZE}x{INPUT_SIZE}", use_gpu=True)
 
     # 绘制目标框
     with paddle.no_grad():
@@ -72,4 +72,4 @@ def TargetDetector(a,r,dir):
             )
 
     # 存储推理结果
-    cv2.imwrite(dir+r+'.jpg', vis)
+    cv2.imwrite(dir+'/'+r, vis)

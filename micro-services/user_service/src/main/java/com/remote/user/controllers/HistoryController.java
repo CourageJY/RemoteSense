@@ -101,12 +101,18 @@ public class HistoryController {
 
         //从oss中移除对象
         OSSConnection ossConnection=new OSSConnection();
-        ossConnection.removeFile(his.getOriginName1());
+        if(!ossConnection.removeFile(his.getOriginName1())){
+            return Result.wrapErrorResult("oss中文件删除失败");
+        }
         if(his.getOriginName2()!=null){
-            ossConnection.removeFile(his.getOriginName2());
+            if(!ossConnection.removeFile(his.getOriginName2())){
+                return Result.wrapErrorResult("oss中文件删除失败");
+            }
         }
         if(his.getResultName()!=null){
-            ossConnection.removeFile(his.getResultName());
+            if(!ossConnection.removeFile(his.getResultName())){
+                return Result.wrapErrorResult("oss中文件删除失败");
+            }
         }
 
         //在mysql中使用标记删除

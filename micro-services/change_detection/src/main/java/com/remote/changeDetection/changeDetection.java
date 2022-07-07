@@ -8,6 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @ComponentScan({"com.remote"})
 @EnableDiscoveryClient
+@EntityScan("com.remote.models")
 @SpringBootApplication
 public class changeDetection {
     public static void main(String[] args)

@@ -1,8 +1,13 @@
 package com.remote.changeDetection.controllers;
 
 import com.alibaba.fastjson.JSONObject;
+import com.remote.changeDetection.services.HistoryService;
+import com.remote.changeDetection.services.UserService;
+import com.remote.models.History;
+import com.remote.tools.enums.HistoryStatus;
 import com.remote.tools.utils.*;
 import io.swagger.annotations.Api;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +25,12 @@ import java.util.*;
 public class changeDetectionController {
     //文件名列表
     public List<String>ls=new ArrayList<>();
+
+    @Autowired
+    HistoryService historyService;
+
+    @Autowired
+    UserService userService;
 
     @RequestMapping(value = "/test",method = RequestMethod.GET)
     public Result<byte[]> test(){
@@ -84,9 +95,10 @@ public class changeDetectionController {
         try {
             //传入文件名的参数
             Map<String, Object> map=new HashMap<>();
-            map.put("a",a);
-            map.put("b",b);
-            map.put("r",r);
+            map.put("a",a+".png");
+            map.put("b",b+".png");
+            map.put("r",r+".jpg");
+            map.put("dir",absolute+"/result/");
             //执行请求
             res=http.doGet(url,map);
             System.out.println(res);
@@ -129,6 +141,135 @@ public class changeDetectionController {
             return Result.wrapErrorResult("失败");
         }
     }
+
+
+    @RequestMapping(value = "/batch_work",method = RequestMethod.POST)
+    public Result<String> batchWork(@RequestParam(value = "his_id")String hisId) throws FileNotFoundException {
+        //获取目标记录
+        History history = historyService.getById(hisId);
+        historyService.createOrUpdate(history);
+        String fileName1=history.getOriginName1();
+        String fileName2=history.getOriginName2();
+
+        //异步线程，避免接口阻塞
+        Thread thread = new Thread(()->{
+            //修改状态
+            history.setStatus(HistoryStatus.isRunning.toString());
+            historyService.createOrUpdate(history);
+            String path="micro-services/change_detection/src/main/resources";
+            String absolute=new File(path).getAbsolutePath();
+
+            //建立oss连接
+            OSSConnection oss = new OSSConnection();
+
+            //下载文件
+            if(!oss.downLoadMatipart("change-detection", fileName1)
+                    ||!oss.downLoadMatipart("change-detection", fileName2)){
+                //更新数据库状态
+                history.setStatus(HistoryStatus.runError.toString());//失败的情况
+                historyService.createOrUpdate(history);
+                try {
+                    throw new Exception("下载文件失败");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            //解压文件
+            File file1 = new File(absolute+"/input/"+fileName1);
+            File file2 = new File(absolute+"/input/"+fileName2);
+            ZipUtil.unPackZip(file1,absolute+"/input/");
+            ZipUtil.unPackZip(file2,absolute+"/input/");
+
+            //获取解压的目录名（须保证解压文件的内部目录和解压文件名一致）
+            String fName1 = fileName1.split("\\.")[0];
+            String fName2 = fileName2.split("\\.")[0];
+            File inputFolder1 = new File(absolute + "/input/"+ fName1);
+            File inputFolder2 = new File(absolute + "/input/"+ fName2);
+
+            //创建结果目录
+            String resultFolderDir = Radom.getRandomNumber(6,ls);
+            File resultFolder = new File(absolute+ "/result/"+resultFolderDir);
+            resultFolder.mkdir();
+
+            //获取目标文件夹下的所有图片
+            File[] images1 = inputFolder1.listFiles();
+            File[] images2 = inputFolder2.listFiles();
+            //遍历运行
+            assert images1 != null;
+            assert images2 != null;
+            for(int i=0;i<images1.length;i++){
+                File image1=images1[i];
+                File image2=images2[i];
+                String url="http://127.0.0.1:8300/ChangeDetector";
+                Http http=new Http();
+                try {
+                    //传入文件名的参数
+                    Map<String, Object> map=new HashMap<>();
+                    map.put("a",fName1 +"\\" + image1.getName());
+                    map.put("b",fName2 +"\\" + image2.getName());
+                    map.put("r",image1.getName());
+                    map.put("dir",absolute+"/result/"+resultFolderDir);
+                    //执行请求
+                    String res=http.doGet(url,map);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    MyFile.DeleteFolder(absolute+ "/input/"+fileName1);
+                    MyFile.DeleteFolder(absolute+ "/input/"+fName1);
+                    MyFile.DeleteFolder(absolute+ "/input/"+fileName2);
+                    MyFile.DeleteFolder(absolute+ "/input/"+fName2);
+                    MyFile.DeleteFolder(absolute+ "/result/"+resultFolderDir);
+                    ls.remove(resultFolderDir);
+
+                    //更新数据库状态
+                    history.setStatus(HistoryStatus.runError.toString());//失败的情况
+                    historyService.createOrUpdate(history);
+                    try {
+                        throw e;
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+
+            //压缩结果目录
+            FileOutputStream fos= null;
+            try {
+                fos = new FileOutputStream(new File(absolute+"/result/"+resultFolderDir+".zip"));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            ZipUtil.toZip(absolute+ "/result/" + resultFolderDir,fos,true);
+            if(!oss.uplopadMatipart(fName1+"_result.zip",absolute+"/result/"+resultFolderDir+".zip")){
+                //更新数据库状态
+                history.setStatus(HistoryStatus.runError.toString());//失败的情况
+                historyService.createOrUpdate(history);
+                try {
+                    throw new Exception("上传文件失败");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            //更新数据库状态
+            history.setStatus(HistoryStatus.runEnd.toString());
+            history.setResultName(fName1+"_result.zip");
+            historyService.createOrUpdate(history);
+
+            //删除tmp目录及文件
+            MyFile.DeleteFolder(absolute+ "/input/"+fileName1);
+            MyFile.DeleteFolder(absolute+ "/input/"+fName1);
+            MyFile.DeleteFolder(absolute+ "/input/"+fileName2);
+            MyFile.DeleteFolder(absolute+ "/input/"+fName2);
+            MyFile.DeleteFolder(absolute+ "/result/" + resultFolderDir);
+            MyFile.DeleteFolder(absolute+ "/result/"+resultFolderDir+".zip");
+            ls.remove(resultFolderDir);
+        });
+
+        thread.start();
+        return Result.wrapSuccessfulResult("已开始运算，在历史记录中查看运算状态，下载运算结果。");
+    }
+
 }
 
 //调用并运行python文件

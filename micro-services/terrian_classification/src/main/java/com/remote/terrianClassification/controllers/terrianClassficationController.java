@@ -1,8 +1,13 @@
 package com.remote.terrianClassification.controllers;
 
 import com.alibaba.fastjson.JSONObject;
+import com.remote.models.History;
+import com.remote.terrianClassification.services.HistoryService;
+import com.remote.terrianClassification.services.UserService;
+import com.remote.tools.enums.HistoryStatus;
 import com.remote.tools.utils.*;
 import io.swagger.annotations.Api;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +25,12 @@ import java.util.*;
 public class terrianClassficationController {
     //文件名列表
     public List<String> ls=new ArrayList<>();
+
+    @Autowired
+    HistoryService historyService;
+
+    @Autowired
+    UserService userService;
 
     @RequestMapping(value = "/test",method = RequestMethod.GET)
     public Result<String> test(){
@@ -54,8 +65,9 @@ public class terrianClassficationController {
         try {
             //传入文件名的参数
             Map<String, Object> map=new HashMap<>();
-            map.put("a",a);
-            map.put("r",r);
+            map.put("a",a+".jpg");
+            map.put("r",r+".jpg");
+            map.put("dir",absolute+"/result/");
             //执行请求
             res=http.doGet(url,map);
             System.out.println(res);
@@ -96,6 +108,106 @@ public class terrianClassficationController {
             e.printStackTrace();
             return Result.wrapErrorResult("失败");
         }
+    }
+
+    @RequestMapping(value = "/batch_work",method = RequestMethod.POST)
+    public Result<String> batchWork(@RequestParam(value = "his_id")String hisId) throws FileNotFoundException {
+        //获取目标记录
+        History history = historyService.getById(hisId);
+        historyService.createOrUpdate(history);
+        String fileName=history.getOriginName1();
+
+        //异步线程，避免接口阻塞
+        Thread thread = new Thread(()->{
+            //修改状态
+            history.setStatus(HistoryStatus.isRunning.toString());
+            historyService.createOrUpdate(history);
+            String path="micro-services/terrian_classification/src/main/resources";
+            String absolute=new File(path).getAbsolutePath();
+
+            //建立oss连接
+            OSSConnection oss = new OSSConnection();
+
+            //下载文件
+            if(!oss.downLoadMatipart("terrian-classification", fileName)){
+                //更新数据库状态
+                history.setStatus(HistoryStatus.runError.toString());//失败的情况
+                historyService.createOrUpdate(history);
+                Thread.interrupted();
+            }
+
+            //解压文件
+            File file = new File(absolute+"/input/"+fileName);
+            ZipUtil.unPackZip(file,absolute+"/input/");
+
+            //获取解压的目录名（须保证解压文件的内部目录和解压文件名一致）
+            String fName = fileName.split("\\.")[0];
+            File inputFolder = new File(absolute + "/input/"+ fName);
+
+            //创建结果目录
+            String resultFolderDir = Radom.getRandomNumber(6,ls);
+            File resultFolder = new File(absolute+ "/result/"+resultFolderDir);
+            resultFolder.mkdir();
+
+            //获取目标文件夹下的所有图片
+            File[] images = inputFolder.listFiles();
+            //遍历运行
+            assert images != null;
+            for(File image:images){
+                String url="http://127.0.0.1:8300/TerrianClassification";
+                Http http=new Http();
+                try {
+                    //传入文件名的参数
+                    Map<String, Object> map=new HashMap<>();
+                    map.put("a",fName +"\\" + image.getName());
+                    map.put("r",image.getName());
+                    map.put("dir",absolute+"/result/"+resultFolderDir);
+                    //执行请求
+                    String res=http.doGet(url,map);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    MyFile.DeleteFolder(absolute+ "/input/"+fileName);
+                    MyFile.DeleteFolder(absolute+ "/input/"+fName);
+                    MyFile.DeleteFolder(absolute+ "/result/"+resultFolderDir);
+                    ls.remove(resultFolderDir);
+
+                    //更新数据库状态
+                    history.setStatus(HistoryStatus.runError.toString());//失败的情况
+                    historyService.createOrUpdate(history);
+                    Thread.interrupted();
+                }
+            }
+
+            //压缩结果目录
+            FileOutputStream fos= null;
+            try {
+                fos = new FileOutputStream(new File(absolute+"/result/"+resultFolderDir+".zip"));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            ZipUtil.toZip(absolute+ "/result/" + resultFolderDir,fos,true);
+            if(!oss.uplopadMatipart(fName+"_result.zip",absolute+"/result/"+resultFolderDir+".zip")){
+                //更新数据库状态
+                history.setStatus(HistoryStatus.runError.toString());//失败的情况
+                historyService.createOrUpdate(history);
+                Thread.interrupted();
+            }
+
+            //更新数据库状态
+            history.setStatus(HistoryStatus.runEnd.toString());
+            history.setResultName(fName+"_result.zip");
+            historyService.createOrUpdate(history);
+
+            //删除tmp目录及文件
+            MyFile.DeleteFolder(absolute+ "/input/"+fileName);
+            MyFile.DeleteFolder(absolute+ "/input/"+fName);
+            MyFile.DeleteFolder(absolute+ "/result/" + resultFolderDir);
+            MyFile.DeleteFolder(absolute+ "/result/"+resultFolderDir+".zip");
+            ls.remove(resultFolderDir);
+        });
+
+        thread.start();
+        return Result.wrapSuccessfulResult("已开始运算，在历史记录中查看运算状态，下载运算结果。");
     }
 }
 

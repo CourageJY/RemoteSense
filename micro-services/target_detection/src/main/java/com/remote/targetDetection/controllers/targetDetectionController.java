@@ -3,6 +3,7 @@ package com.remote.targetDetection.controllers;
 import com.remote.models.History;
 import com.remote.targetDetection.services.HistoryService;
 import com.remote.targetDetection.services.UserService;
+import com.remote.tools.enums.HistoryStatus;
 import com.remote.tools.utils.*;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +28,11 @@ public class targetDetectionController {
     //文件名列表
     public List<String>ls=new ArrayList<>();
 
-
     @Autowired
     HistoryService historyService;
 
     @Autowired
     UserService userService;
-
 
     @RequestMapping(value = "/test",method = RequestMethod.GET)
     public Result<byte[]> test(){
@@ -84,8 +83,9 @@ public class targetDetectionController {
         try {
             //传入文件名的参数
             Map<String, Object> map=new HashMap<>();
-            map.put("a",a);
-            map.put("r",r);
+            map.put("a",a+".jpg");
+            map.put("r",r+".jpg");
+            map.put("dir",absolute+"/result/");
             //执行请求
             String res=http.doGet(url,map);
             System.out.println(res);
@@ -125,39 +125,48 @@ public class targetDetectionController {
     }
 
     @RequestMapping(value = "/batch_work",method = RequestMethod.POST)
-    public Result batchWork(String fileName, String userId, String title) throws FileNotFoundException {
-        History history = new History();
-        history.setId(historyService.generateID());
-        history.setCreateTime(Instant.now());
-        history.setOriginName1(fileName);
-        history.setOriginName2("");
-        history.setTitle(title);
-        history.setResultName("");
-        history.setSize("");
-        history.setIsRemove(false);
-        history.setStatus("created");
-        history.setUser(userService.getById(userId));
-        history.setType("target-detection");
+    public Result<String> batchWork(@RequestParam(value = "his_id")String hisId) throws FileNotFoundException {
+        //获取目标记录
+        History history = historyService.getById(hisId);
         historyService.createOrUpdate(history);
+        String fileName=history.getOriginName1();
 
-
+        //异步线程，避免接口阻塞
         Thread thread = new Thread(()->{
-            history.setStatus("running");
+            //修改状态
+            history.setStatus(HistoryStatus.isRunning.toString());
             historyService.createOrUpdate(history);
             String path="micro-services/target_detection/src/main/resources";
             String absolute=new File(path).getAbsolutePath();
-            OSSConnection oss = new OSSConnection();
-            oss.downLoadMatipart("target-detection", fileName);
 
-            ZipUtil zipUtil = new ZipUtil();
-            File file = new File(absolute+"/inputData.zip");
-            zipUtil.unPackZip(file,absolute+"/input/");
+            //建立oss连接
+            OSSConnection oss = new OSSConnection();
+
+            //下载文件
+            if(!oss.downLoadMatipart("target-detection", fileName)){
+                //更新数据库状态
+                history.setStatus(HistoryStatus.runError.toString());//失败的情况
+                historyService.createOrUpdate(history);
+                Thread.interrupted();
+            }
+
+            //解压文件
+            File file = new File(absolute+"/input/"+fileName);
+            ZipUtil.unPackZip(file,absolute+"/input/");
+
+            //获取解压的目录名（须保证解压文件的内部目录和解压文件名一致）
             String fName = fileName.split("\\.")[0];
             File inputFolder = new File(absolute + "/input/"+ fName);
-            File[] images = inputFolder.listFiles();
+
+            //创建结果目录
             String resultFolderDir = Radom.getRandomNumber(6,ls);
-            File resultFolder = new File(absolute+ "/"+resultFolderDir);
+            File resultFolder = new File(absolute+ "/result/"+resultFolderDir);
             resultFolder.mkdir();
+
+            //获取目标文件夹下的所有图片
+            File[] images = inputFolder.listFiles();
+            //遍历运行
+            assert images != null;
             for(File image:images){
                 String url="http://127.0.0.1:8300/TargetDetector";
                 Http http=new Http();
@@ -166,41 +175,49 @@ public class targetDetectionController {
                     Map<String, Object> map=new HashMap<>();
                     map.put("a",fName +"\\" + image.getName());
                     map.put("r",image.getName());
-                    map.put("dir",absolute+"/"+resultFolderDir);
+                    map.put("dir",absolute+"/result/"+resultFolderDir);
                     //执行请求
                     String res=http.doGet(url,map);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    MyFile.DeleteFolder(absolute+ "/input/");
-                    MyFile.DeleteFolder(absolute+ "/result/");
-                    File temp = new File(absolute+ "/input/");
-                    temp.mkdir();
-                    temp = new File(absolute+ "/result/");
-                    temp.mkdir();
-                    //修改状态
-                    history.setStatus("fault");
+                    MyFile.DeleteFolder(absolute+ "/input/"+fileName);
+                    MyFile.DeleteFolder(absolute+ "/input/"+fName);
+                    MyFile.DeleteFolder(absolute+ "/result/"+resultFolderDir);
+                    ls.remove(resultFolderDir);
+
+                    //更新数据库状态
+                    history.setStatus(HistoryStatus.runError.toString());//失败的情况
                     historyService.createOrUpdate(history);
+                    Thread.interrupted();
                 }
             }
-//            FileOutputStream fos= null;
-//            try {
-//                fos = new FileOutputStream(new File(absolute+"/result.zip"));
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            }
-//            zipUtil.toZip(absolute+ resultFolderDir,fos,true);
-//            String fname = fileName.split("\\.")[0];
-//            oss.uplopadMatipart(fname+"_result.zip",absolute+"/result.zip");
-//            history.setStatus("success");
-//            history.setResultName(fname+"_result.zip");
-//            historyService.createOrUpdate(history);
-//
-//            MyFile.DeleteFolder(absolute+ "/input/");
-//            MyFile.DeleteFolder(absolute+ "/inputData.zip");
-//            File temp = new File(absolute+ "/input/");
-//            temp.mkdir();
-//            MyFile.DeleteFolder(absolute+ "/" + resultFolderDir);
-//            MyFile.DeleteFolder(absolute+ "/result.zip");
+
+            //压缩结果目录
+            FileOutputStream fos= null;
+            try {
+                fos = new FileOutputStream(new File(absolute+"/result/"+resultFolderDir+".zip"));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            ZipUtil.toZip(absolute+ "/result/" + resultFolderDir,fos,true);
+            if(!oss.uplopadMatipart(fName+"_result.zip",absolute+"/result/"+resultFolderDir+".zip")){
+                //更新数据库状态
+                history.setStatus(HistoryStatus.runError.toString());//失败的情况
+                historyService.createOrUpdate(history);
+                Thread.interrupted();
+            }
+
+            //更新数据库状态
+            history.setStatus(HistoryStatus.runEnd.toString());
+            history.setResultName(fName+"_result.zip");
+            historyService.createOrUpdate(history);
+
+            //删除tmp目录及文件
+            MyFile.DeleteFolder(absolute+ "/input/"+fileName);
+            MyFile.DeleteFolder(absolute+ "/input/"+fName);
+            MyFile.DeleteFolder(absolute+ "/result/" + resultFolderDir);
+            MyFile.DeleteFolder(absolute+ "/result/"+resultFolderDir+".zip");
+            ls.remove(resultFolderDir);
         });
 
         thread.start();

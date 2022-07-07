@@ -46,7 +46,7 @@ def get_rate(image,n):
                 count+=1
     return count/size
 
-def TerrianClassification(a,r):
+def TerrianClassification(a,r,dir):
     # 输入影像尺寸
     INPUT_SIZE = 256
 
@@ -54,7 +54,7 @@ def TerrianClassification(a,r):
     current_path = os.path.abspath(__file__)
     # 获取当前文件的父目录
     absolute = os.path.abspath(os.path.dirname(current_path) + os.path.sep + ".")
-    A_PATH = absolute + "/input/"+a+".jpg"
+    A_PATH = absolute + "/input/"+a
 
     # 读取输入影像
     im = cv2.imread(A_PATH)
@@ -85,6 +85,6 @@ def TerrianClassification(a,r):
         label = show_image(label, lut=get_lut())
 
     # 存储推理结果
-    cv2.imwrite(absolute + './result/'+r+'.jpg', label)
+    cv2.imwrite(dir + '/'+r, label)
 
     return res

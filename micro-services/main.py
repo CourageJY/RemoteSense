@@ -16,7 +16,8 @@ def change_detector():
     a = args.get("a")
     b = args.get("b")
     r = args.get("r")
-    rate=ChangeDetector(a,b,r)
+    dir = args.get("dir")
+    rate=ChangeDetector(a,b,r,dir)
     res={"res":rate}
     return jsonify(res)
 
@@ -37,7 +38,8 @@ def target_extraction():
     args = request.args  # 获取get参数
     a = args.get("a")
     r = args.get("r")
-    TargetExtraction(a,r)
+    dir = args.get("dir")
+    TargetExtraction(a,r,dir)
     res={"res":"success"}
     return jsonify(res)
 
@@ -47,7 +49,8 @@ def terrian_classification():
     args = request.args  # 获取get参数
     a = args.get("a")
     r = args.get("r")
-    rate=TerrianClassification(a,r)
+    dir = args.get("dir")
+    rate=TerrianClassification(a,r,dir)
     res={"res":rate}
     return jsonify(res)
 
