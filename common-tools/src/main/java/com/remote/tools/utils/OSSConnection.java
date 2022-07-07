@@ -82,6 +82,8 @@ public class OSSConnection {
     //分片下载
     @Async
     public void downLoadMatipart(String fileType,String fileName){
+        String path="micro-services/target_detection/src/main/resources";
+        String absolute=new File(path).getAbsolutePath();
         // 不包含Bucket名称在内的Object完整路径
         String objectName = fileName;
         String pathName = "";
@@ -104,7 +106,7 @@ public class OSSConnection {
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
 
         try {
-            //pathName="E:\\Programs\\RemoteSensing\\RemoteSensing-backend\\input.zip";
+            pathName=absolute+"/inputData.zip";
             //pathName="./input.zip";
 
             // 请求10个任务并发下载。

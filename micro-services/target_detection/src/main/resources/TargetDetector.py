@@ -25,7 +25,8 @@ def TargetDetector(a,r,dir):
     current_path = os.path.abspath(__file__)
     # 获取当前文件的父目录
     absolute = os.path.abspath(os.path.dirname(current_path) + os.path.sep + ".")
-    A_PATH = absolute + '/input/'+a+'.jpg'
+    A_PATH = absolute + '\input\\'+a
+    print(A_PATH)
 
     # 读取输入影像
     im = cv2.imread(A_PATH)
@@ -51,8 +52,8 @@ def TargetDetector(a,r,dir):
     #     check=True
     # )
 
-    modelsPath = absolute + '/static_models'
-    predictor = Predictor(f"{modelsPath}/{INPUT_SIZE}x{INPUT_SIZE}", use_gpu=True)
+    modelsPath = absolute + '\static_models'
+    predictor = Predictor(f"{modelsPath}\{INPUT_SIZE}x{INPUT_SIZE}", use_gpu=False)
 
     # 绘制目标框
     with paddle.no_grad():

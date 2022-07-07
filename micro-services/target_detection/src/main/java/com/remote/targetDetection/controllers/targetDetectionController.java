@@ -152,10 +152,11 @@ public class targetDetectionController {
             ZipUtil zipUtil = new ZipUtil();
             File file = new File(absolute+"/inputData.zip");
             zipUtil.unPackZip(file,absolute+"/input/");
-            File inputFolder = new File(absolute + "/input/");
+            String fName = fileName.split("\\.")[0];
+            File inputFolder = new File(absolute + "/input/"+ fName);
             File[] images = inputFolder.listFiles();
             String resultFolderDir = Radom.getRandomNumber(6,ls);
-            File resultFolder = new File(absolute+ resultFolderDir);
+            File resultFolder = new File(absolute+ "/"+resultFolderDir);
             resultFolder.mkdir();
             for(File image:images){
                 String url="http://127.0.0.1:8300/TargetDetector";
@@ -163,9 +164,9 @@ public class targetDetectionController {
                 try {
                     //传入文件名的参数
                     Map<String, Object> map=new HashMap<>();
-                    map.put("a",image.getName());
+                    map.put("a",fName +"\\" + image.getName());
                     map.put("r",image.getName());
-                    map.put("dir",absolute+resultFolderDir);
+                    map.put("dir",absolute+"/"+resultFolderDir);
                     //执行请求
                     String res=http.doGet(url,map);
                 } catch (Exception e) {
@@ -181,24 +182,25 @@ public class targetDetectionController {
                     historyService.createOrUpdate(history);
                 }
             }
-            FileOutputStream fos= null;
-            try {
-                fos = new FileOutputStream(new File(absolute+"/result.zip"));
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            zipUtil.toZip(absolute+ resultFolderDir,fos,true);
-            oss.uplopadMatipart(fileName+"_result",absolute+"/result.zip");
-            history.setStatus("success");
-            history.setResultName(fileName+"_result");
-            historyService.createOrUpdate(history);
-
-            MyFile.DeleteFolder(absolute+ "/input/");
-            MyFile.DeleteFolder(absolute+ "/inputData.zip");
-            File temp = new File(absolute+ "/input/");
-            temp.mkdir();
-            MyFile.DeleteFolder(absolute+ "/result/");
-            MyFile.DeleteFolder(absolute+ "/result.zip");
+//            FileOutputStream fos= null;
+//            try {
+//                fos = new FileOutputStream(new File(absolute+"/result.zip"));
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            }
+//            zipUtil.toZip(absolute+ resultFolderDir,fos,true);
+//            String fname = fileName.split("\\.")[0];
+//            oss.uplopadMatipart(fname+"_result.zip",absolute+"/result.zip");
+//            history.setStatus("success");
+//            history.setResultName(fname+"_result.zip");
+//            historyService.createOrUpdate(history);
+//
+//            MyFile.DeleteFolder(absolute+ "/input/");
+//            MyFile.DeleteFolder(absolute+ "/inputData.zip");
+//            File temp = new File(absolute+ "/input/");
+//            temp.mkdir();
+//            MyFile.DeleteFolder(absolute+ "/" + resultFolderDir);
+//            MyFile.DeleteFolder(absolute+ "/result.zip");
         });
 
         thread.start();

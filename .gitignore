@@ -75,3 +75,4 @@ micro-services/terrian_classification/src/main/resources/static_models/256x256/m
 micro-services/terrian_classification/src/main/resources/static_models/256x256/model.pdmodel
 micro-services/terrian_classification/src/main/resources/static_models/256x256/model.yml
 micro-services/terrian_classification/src/main/resources/static_models/256x256/pipeline.yml
+micro-services/target_detection/src/main/resources/__pycache__/TargetDetector.cpython-37.pyc
