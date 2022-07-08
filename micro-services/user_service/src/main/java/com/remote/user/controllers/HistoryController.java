@@ -88,7 +88,7 @@ public class HistoryController {
 
         historyService.createOrUpdate(his);
 
-        return Result.wrapSuccessfulResult(his.getId());
+        return Result.wrapSuccessfulResult("创建成功",his.getId());
     }
 
     @ApiOperation(value = "移除单条历史记录")
