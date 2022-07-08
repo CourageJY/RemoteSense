@@ -175,16 +175,17 @@ public class changeDetectionController {
             }
 
             //解压文件
-            File file1 = new File(absolute+"/input/"+fileName1);
-            File file2 = new File(absolute+"/input/"+fileName2);
-            ZipUtil.unPackZip(file1,absolute+"/input/");
-            ZipUtil.unPackZip(file2,absolute+"/input/");
-
             //获取解压的目录名（须保证解压文件的内部目录和解压文件名一致）
             String fName1 = fileName1.split("\\.")[0];
             String fName2 = fileName2.split("\\.")[0];
             File inputFolder1 = new File(absolute + "/input/"+ fName1);
             File inputFolder2 = new File(absolute + "/input/"+ fName2);
+            inputFolder1.mkdir();
+            inputFolder2.mkdir();
+            File file1 = new File(absolute+"/input/"+fileName1);
+            File file2 = new File(absolute+"/input/"+fileName2);
+            ZipUtil.unPackZip(file1,absolute+"/input/"+fName1);
+            ZipUtil.unPackZip(file2,absolute+"/input/"+fName2);
 
             //创建结果目录
             String resultFolderDir = Radom.getRandomNumber(6,ls);

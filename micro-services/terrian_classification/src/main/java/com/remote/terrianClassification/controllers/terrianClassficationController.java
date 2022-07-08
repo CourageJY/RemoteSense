@@ -136,12 +136,12 @@ public class terrianClassficationController {
             }
 
             //解压文件
-            File file = new File(absolute+"/input/"+fileName);
-            ZipUtil.unPackZip(file,absolute+"/input/");
-
-            //获取解压的目录名（须保证解压文件的内部目录和解压文件名一致）
+            //获取解压的目录名
             String fName = fileName.split("\\.")[0];
             File inputFolder = new File(absolute + "/input/"+ fName);
+            inputFolder.mkdir();
+            File file = new File(absolute+"/input/"+fileName);
+            ZipUtil.unPackZip(file,absolute+"/input/"+fName);
 
             //创建结果目录
             String resultFolderDir = Radom.getRandomNumber(6,ls);
