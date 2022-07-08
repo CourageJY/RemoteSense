@@ -287,6 +287,14 @@ public class OSSConnection {
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
 
         try {
+            if(objectName.isEmpty()){
+                return false;
+            }
+            boolean found = ossClient.doesObjectExist(bucketName, objectName);
+            if(!found){
+                return false;
+            }
+
             // 删除文件或目录。如果要删除目录，目录必须为空。
             ossClient.deleteObject(bucketName, objectName);
 
