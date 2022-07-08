@@ -104,12 +104,12 @@ public class HistoryController {
         if(!ossConnection.removeFile(his.getOriginName1())){
             return Result.wrapErrorResult("oss中文件删除失败");
         }
-        if(his.getOriginName2().isEmpty()){
+        if(!his.getOriginName2().isEmpty()){
             if(!ossConnection.removeFile(his.getOriginName2())){
                 return Result.wrapErrorResult("oss中文件删除失败");
             }
         }
-        if(his.getResultName().isEmpty()){
+        if(!his.getResultName().isEmpty()){
             if(!ossConnection.removeFile(his.getResultName())){
                 return Result.wrapErrorResult("oss中文件删除失败");
             }
