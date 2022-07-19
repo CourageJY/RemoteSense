@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.remote.changeDetection.services.HistoryService;
 import com.remote.changeDetection.services.UserService;
 import com.remote.models.History;
+import com.remote.models.User;
 import com.remote.tools.enums.HistoryStatus;
 import com.remote.tools.utils.*;
 import io.swagger.annotations.Api;
@@ -31,6 +32,9 @@ public class changeDetectionController {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    EmailService emailService;
 
     @RequestMapping(value = "/test",method = RequestMethod.GET)
     public Result<byte[]> test(){
@@ -144,9 +148,12 @@ public class changeDetectionController {
 
 
     @RequestMapping(value = "/batch_work",method = RequestMethod.GET)
-    public Result<String> batchWork(@RequestParam(value = "his_id")String hisId) throws FileNotFoundException {
+    public Result<String> batchWork(@RequestParam(value = "his_id")String hisId,@RequestParam(value = "user_Id")String userId) throws FileNotFoundException {
         //获取目标记录
         History history = historyService.getById(hisId);
+        User user = userService.getById(userId);
+        String userEmail = user.getEmail();
+
         String fileName1=history.getOriginName1();
         String fileName2=history.getOriginName2();
 
@@ -224,6 +231,12 @@ public class changeDetectionController {
                     //更新数据库状态
                     history.setStatus(HistoryStatus.runError.toString());//失败的情况
                     historyService.createOrUpdate(history);
+
+                    try {
+                        emailService.sendEmail(userEmail,"批量式推理失败通知","您的批量式推理："+history.getTitle()+"因系统原因推理失败，请尝试重新上传并推理，为您带来的不便敬请谅解。");
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                     try {
                         throw e;
                     } catch (Exception ex) {
@@ -255,6 +268,12 @@ public class changeDetectionController {
             history.setStatus(HistoryStatus.runEnd.toString());
             history.setResultName(fName1+"_result.zip");
             historyService.createOrUpdate(history);
+
+            try {
+                emailService.sendEmail(userEmail,"批量式推理成功通知","您的批量式推理："+history.getTitle()+"已推理完成，请前往历史记录中下载结果文件。");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             //删除tmp目录及文件
             MyFile.DeleteFolder(absolute+ "/input/"+fileName1);
