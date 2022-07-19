@@ -13,32 +13,32 @@ import java.util.List;
 
 /**
  * 连接OSS的工具类
- * */
+ */
 public class OSSConnection {
 
-        // Endpoint以华东1（杭州）为例，其它Region请按实际情况填写。
-        //String endpoint = "https://oss-cn-hangzhou.aliyuncs.com";
-        String endpoint = "oss-cn-hangzhou.aliyuncs.com";
-        // 阿里云账号AccessKey拥有所有API的访问权限，风险很高。强烈建议您创建并使用RAM用户进行API访问或日常运维，请登录RAM控制台创建RAM用户。
-        String accessKeyId = "LTAI5tFayF7LGkUjbqhPNDu8";
-        String accessKeySecret = "rAHGulFmT45UXtiWFJ3QP1xiA33i4m";
-        // 填写Bucket名称，例如examplebucket。
-        String bucketName = "remote-s";
+    // Endpoint以华东1（杭州）为例，其它Region请按实际情况填写。
+    //String endpoint = "https://oss-cn-hangzhou.aliyuncs.com";
+    String endpoint = "oss-cn-hangzhou.aliyuncs.com";
+    // 阿里云账号AccessKey拥有所有API的访问权限，风险很高。强烈建议您创建并使用RAM用户进行API访问或日常运维，请登录RAM控制台创建RAM用户。
+    String accessKeyId = "LTAI5tFayF7LGkUjbqhPNDu8";
+    String accessKeySecret = "rAHGulFmT45UXtiWFJ3QP1xiA33i4m";
+    // 填写Bucket名称，例如examplebucket。
+    String bucketName = "remote-s";
 
-        //要保存的文件路径
-        String frontName = "../micro-services/";
+    //要保存的文件路径
+    String frontName = "../micro-services/";
 
-        String backName = "/src/main/resources/inputData.zip";
+    String backName = "/src/main/resources/inputData.zip";
 
     /**
-     *  下载Object到本地文件，并保存到指定的本地路径中。如果指定的本地文件存在会覆盖，不存在则新建。
-     *  如果未指定本地路径，则下载后的文件默认保存到程序所属项目对应本地路径中。
+     * 下载Object到本地文件，并保存到指定的本地路径中。如果指定的本地文件存在会覆盖，不存在则新建。
+     * 如果未指定本地路径，则下载后的文件默认保存到程序所属项目对应本地路径中。
      */
-    public boolean downloadFile(String fileType,String fileName) {
+    public boolean downloadFile(String fileType, String fileName) {
         // 不包含Bucket名称在内的Object完整路径
         String objectName = fileName;
         String pathName = "";
-        switch (fileType){
+        switch (fileType) {
             case "change-detection":
                 pathName = frontName + "change_detection" + backName;
                 break;
@@ -82,35 +82,35 @@ public class OSSConnection {
 
     //分片下载
     @Async
-    public boolean downLoadMatipart(String fileType,String fileName){
+    public boolean downLoadMatipart(String fileType, String fileName) {
         // 不包含Bucket名称在内的Object完整路径
         String objectName = fileName;
-        String type="";
-        String pathName="";
-        switch (fileType){
+        String type = "";
+        String pathName = "";
+        switch (fileType) {
             case "change-detection":
-                type="change_detection";
+                type = "change_detection";
                 break;
             case "target-detection":
-                type="target_detection";
+                type = "target_detection";
                 break;
             case "target-extraction":
-                type="target_extraction";
+                type = "target_extraction";
                 break;
             case "terrian-classification":
-                type="terrian_classification";
+                type = "terrian_classification";
                 break;
             default:
                 break;
         }
 
-        String path="micro-services/"+type+"/src/main/resources";
-        String absolute=new File(path).getAbsolutePath();
+        String path = "micro-services/" + type + "/src/main/resources";
+        String absolute = new File(path).getAbsolutePath();
 
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
 
         try {
-            pathName=absolute+"/input/"+fileName;
+            pathName = absolute + "/input/" + fileName;
             //pathName="./input.zip";
 
             // 请求10个任务并发下载。
@@ -160,7 +160,7 @@ public class OSSConnection {
     }
 
     //分片上传
-    public boolean uplopadMatipart(String objectName,String filePath){
+    public boolean uplopadMatipart(String objectName, String filePath) {
 
         // 创建OSSClient实例。
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
@@ -197,7 +197,7 @@ public class OSSConnection {
             String uploadId = upresult.getUploadId();
 
             // partETags是PartETag的集合。PartETag由分片的ETag和分片号组成。
-            List<PartETag> partETags =  new ArrayList<PartETag>();
+            List<PartETag> partETags = new ArrayList<PartETag>();
             // 每个分片的大小，用于计算文件有多少个分片。单位为字节。
             final long partSize = 5 * 1024 * 1024L;   //5 MB。
 
@@ -232,7 +232,7 @@ public class OSSConnection {
                 // 设置分片大小。除了最后一个分片没有大小限制，其他的分片最小为100 KB。
                 uploadPartRequest.setPartSize(curPartSize);
                 // 设置分片号。每一个上传的分片都有一个分片号，取值范围是1~10000，如果超出此范围，OSS将返回InvalidArgument错误码。
-                uploadPartRequest.setPartNumber( i + 1);
+                uploadPartRequest.setPartNumber(i + 1);
                 // 每个分片不需要按顺序上传，甚至可以在不同客户端上传，OSS会按照分片号排序组成完整的文件。
                 UploadPartResult uploadPartResult = ossClient.uploadPart(uploadPartRequest);
                 // 每次上传分片之后，OSS的返回结果包含PartETag。PartETag将被保存在partETags中。
@@ -282,16 +282,16 @@ public class OSSConnection {
         }
     }
 
-    public boolean removeFile(String objectName){
+    public boolean removeFile(String objectName) {
         // 创建OSSClient实例。
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
 
         try {
-            if(objectName.isEmpty()){
+            if (objectName.isEmpty()) {
                 return false;
             }
             boolean found = ossClient.doesObjectExist(bucketName, objectName);
-            if(!found){
+            if (!found) {
                 return false;
             }
 
