@@ -39,9 +39,9 @@ public class HistoryService {
     public String generateID(){
         long c= history.count()+1;
         StringBuilder s= new StringBuilder();
-        s=new StringBuilder(Long.toString(c));
-        int k=s.length();
         while(true){
+            s=new StringBuilder(Long.toString(c));
+            int k=s.length();
             for(int i=0;i<6-k;i++){
                 s.insert(0, "0");
             }
