@@ -129,10 +129,10 @@ public class targetDetectionController {
     }
 
     @RequestMapping(value = "/batch_work",method = RequestMethod.GET)
-    public Result<String> batchWork(@RequestParam(value = "his_id")String hisId,@RequestParam(value = "user_Id")String userId) throws FileNotFoundException {
+    public Result<String> batchWork(@RequestParam(value = "his_id")String hisId) throws FileNotFoundException {
         //获取目标记录
         History history = historyService.getById(hisId);
-        User user = userService.getById(userId);
+        User user = history.getUser();
         String userEmail = user.getEmail();
         String fileName=history.getOriginName1();
 

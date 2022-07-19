@@ -20,9 +20,6 @@
         <module name="change-detection" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="RemoteSensing-backend" target="11" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
